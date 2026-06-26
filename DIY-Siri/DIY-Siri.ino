@@ -29,7 +29,7 @@ ISR(ADC_vect){
 ISR(TIMER0_OVF_vect){//activates every 16.32ms @ 1024 prescaler
     timer0InterruptCount++;
 }
-//!!!START OF TRANSMISSION IS 0xFF, END OF TRANSMISSION IS 0xEE
+//!!!START OF (PACKET) IS 0xFF, END OF SAMPLE IS 0xEE
 void StartedTalking()
 {
     if (!sampling)//cant sample twice
