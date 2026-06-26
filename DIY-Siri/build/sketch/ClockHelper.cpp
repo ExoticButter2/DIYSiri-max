@@ -1,3 +1,4 @@
+#line 1 "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\ClockHelper.cpp"
 #include "ClockHelper.h"
 #include <stdint.h>
 

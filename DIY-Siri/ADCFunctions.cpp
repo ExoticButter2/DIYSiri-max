@@ -55,7 +55,7 @@ void StartADC()
     EnableADCPower();
     EnableADCInterrupts();
     SetPrescalerTo64();
-    SetTriggerSourceToTimer0();
+    SetTriggerSourceToTimer1();
     EnableAutoTrigger();
 }
 

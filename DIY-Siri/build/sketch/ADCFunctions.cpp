@@ -1,3 +1,4 @@
+#line 1 "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\ADCFunctions.cpp"
 #include "ADCFunctions.h"
 #include "ClockHelper.h"
 #include <stdint.h>
@@ -55,7 +56,7 @@ void StartADC()
     EnableADCPower();
     EnableADCInterrupts();
     SetPrescalerTo64();
-    SetTriggerSourceToTimer0();
+    SetTriggerSourceToTimer1();
     EnableAutoTrigger();
 }
 
