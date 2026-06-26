@@ -22,11 +22,15 @@ void SetPrescalerTo64()//changes conversion speed to ~18.518kHz
     ADCSRA |= (1 << 2);
 }
 
-void SetTriggerSourceToTimer1()
+void Setup_Set_Timer1TriggerSource()
 {
     ADCSRB |= (1 << 0);//enable ADTS0
     ADCSRB &= ~(1 << 1);//disable ADTS1
     ADCSRB |= (1 << 2);//enable ADTS2
+
+    EnableTimer1();
+    SetTimer1CompareBTo16kHz();//already sets prescaler
+    EnableTimer1CompareBInterrupt();
 }
 
 void EnableADCInterrupts()
@@ -55,8 +59,15 @@ void StartADC()
     EnableADCPower();
     EnableADCInterrupts();
     SetPrescalerTo64();
-    SetTriggerSourceToTimer1();
+    Setup_Set_Timer1TriggerSource();//sets timer 1 and sets it as trigger source
     EnableAutoTrigger();
+}
+
+void DisableADC()
+{
+    DisableADCPower();
+    DisableTimer1CompareBInterrupt();
+    DisableTimer1();
 }
 
 void ChangeChannel(int channel)
