@@ -1,3 +1,4 @@
+#line 1 "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\.vscode\\c_cpp_properties.json"
 {
   "configurations": [
     {
@@ -34,9 +35,9 @@
         "-DARDUINO_ARCH_AVR",
         "-IC:\\Users\\maksi\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.8\\cores\\arduino",
         "-IC:\\Users\\maksi\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.8\\variants\\standard",
-        "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\build\\sketch\\DIY-Siri.ino.cpp",
+        "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\build\\sketch\\ADCFunctions.cpp",
         "-o",
-        "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\build\\sketch\\DIY-Siri.ino.cpp.o"
+        "C:\\Users\\maksi\\OneDrive\\Documents\\GitHub\\DIYSiri Ayo\\DIY-Siri\\build\\sketch\\ADCFunctions.cpp.o"
       ],
       "defines": [
         "F_CPU=16000000L",

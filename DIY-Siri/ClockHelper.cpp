@@ -1,14 +1,7 @@
 #include "ClockHelper.h"
 #include <stdint.h>
+#include <avr/io.h>
 
-#define TCCR1B (*(volatile uint8_t*)0x81)
-#define TCCR0B (*(volatile uint8_t*)0x25)
-#define OCR1BH (*(volatile uint8_t*)0x8B)
-#define OCR1BL (*(volatile uint8_t*)0x8A)
-#define TIMSK1 (*(volatile uint8_t*)0x6F)
-#define TIMSK0 (*(volatile uint8_t*)0x6E)
-#define TIFR0 (*(volatile uint8_t*)0x15)
-#define PRR (*(volatile uint8_t*)0x64)
 
 #pragma region NON_HEADER
 
@@ -17,115 +10,99 @@
 #pragma region HEADER
 void EnableTimer1()//default prescaler 1
 {
-    PRR &= ~(1 << 3);//disable PRTIM1
+    PRR &= ~(1 << PRTIM1);//disable PRTIM1
     SetTimer1PrescalerTo1();
 }
 
 void DisableTimer1()
 {
     ResetTimer1Prescaler();
-    PRR |= (1 << 3);
-}
-
-void EnableTimer1CompareBInterrupt()
-{
-    TIMSK1 |= (1 << 2);//enable OCIE1B
-}
-
-void DisableTimer1CompareBInterrupt()
-{
-    TIMSK1 &= ~(1 << 2);//disable OCIE1B
+    DisableTimer1CTC();
+    PRR |= (1 << PRTIM1);
 }
 
 void SetTimer1PrescalerTo1()
 {
-    TCCR1B |= (1 << 0);
-    TCCR1B &= ~(1 << 1);
-    TCCR1B &= ~(1 << 2);
+    ResetTimer1Prescaler();
+
+    TCCR1B |= (1 << CS10);
 }
 
 void SetTimer1PrescalerTo8()
 {
-    TCCR1B &= ~(1 << 0);//disable cs10
-    TCCR1B |= (1 << 1);//yeah like ayo fr cs11 11212 12313143423940
-    TCCR1B &= ~(1 << 2);//banana
+    ResetTimer1Prescaler();
+
+    TCCR1B |= 2;//second bit (010)
 }
 
 void ResetTimer1Prescaler()
 {
-    TCCR1B &= ~(1 << 0);
-    TCCR1B &= ~(1 << 1);
-    TCCR1B &= ~(1 << 2);
+    TCCR1B &= 0xF8;
 }
 
 void SetTimer1CompareBTo16kHz()
 {
+    EnableTimer1CTC();
     SetTimer1PrescalerTo8();
-    //set to 125 for 16khz timing wait actually?? omg
-    OCR1BL;//read low byte before high
-    OCR1BH = 0;//fr 1 bih worth 0 sigma
-    OCR1BL = 125;
+    //set to 124 (125 - 1) for 16khz timing wait actually?? omg
+    OCR1B = 124;//fr 1 bih worth 0 sigma
+    OCR1A = 124;
 }
 
-void EnableTimer0()//default prescaler 1
+void EnableTimer1CTC()
 {
-    PRR &= ~(1 << 5);
-    SetTimer0PrescalerTo1();
-    EnableTimer0OverflowInterrupts();
+    TCCR1B |= (1 << WGM12);
 }
 
-void EnableTimer0OverflowInterrupts()
+void DisableTimer1CTC()
 {
-    TIFR0 &= ~(1 << 0);//interrupt flag
-    TIMSK0 |= (1 << 0);//interrupt toggle
+    TCCR1B &= ~(1 << WGM12);
 }
 
-void DisableTimer0OverflowInterrupts()
+
+void EnableTimer2()//default prescaler 1
 {
-    TIFR0 &= ~(1 << 0);
-    TIMSK0 &= ~(1 << 0);
+    PRR &= ~(1 << PRTIM2);
+    SetTimer2PrescalerTo1();
+    EnableTimer2OverflowInterrupt();
 }
 
-void DisableTimer0()
+void DisableTimer2()
 {
-    DisableTimer0OverflowInterrupts();
-    ResetTimer0Prescaler();
-    PRR |= (1 << 5);
+    DisableTimer2OverflowInterrupt();
+    ResetTimer2Prescaler();
+    PRR |= (1 << PRTIM2);
 }
 
-void SetTimer0PrescalerTo1()
+void EnableTimer2OverflowInterrupt()
 {
-    TCCR0B |= (1 << 0);
-    TCCR0B &= ~(1 << 1);
-    TCCR0B &= ~(1 << 2);
+    TIFR2 = (1 << TOV2);//interrupt flag
+    TIMSK2 |= (1 << TOIE2);//interrupt toggle
 }
 
-void SetTimer0PrescalerTo1024()
+void DisableTimer2OverflowInterrupt()
 {
-    TCCR0B |= (1 << 0);
-    TCCR0B |= (1 << 1);
-    TCCR0B |= (1 << 2);
+    TIFR2 = (1 << TOV2);
+    TIMSK2 &= ~(1 << TOIE2);
 }
 
-void ResetTimer0Prescaler()
+void SetTimer2PrescalerTo1()
 {
-    TCCR0B &= ~(1 << 0);
-    TCCR0B &= ~(1 << 1);
-    TCCR0B &= ~(1 << 2);
+    ResetTimer2Prescaler();
+
+    TCCR2B |= (1 << CS20);
 }
 
-void SetTimer0CompareADelay()//goal: 3 seconds
+void SetTimer2PrescalerTo1024()
 {
+    ResetTimer2Prescaler();
 
+    TCCR2B |= 7;//first 3 bits (111)
 }
 
-// void EnableTimer0CompareAInterrupt()
-// {
+void ResetTimer2Prescaler()
+{
+    TCCR2B &= 0xF8;
+}
 
-// }
-
-// void DisableTimer0CompareAInterrupt()
-// {
-
-// }
 #pragma endregion
