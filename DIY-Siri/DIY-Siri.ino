@@ -129,11 +129,17 @@ void OnConversionComplete()
 
     uint8_t length = sizeof(sampleBuffer80ms) / sizeof(sampleBuffer80ms[0]);
 
-    if (sizeof(sampleBuffer80ms) == length)//if buffer filled up
+    if (mode == WAKE_WORD_MODE)
     {
-        SendSampleBuffer(sampleBuffer80ms);
+        if (sizeof(sampleBuffer80ms) == length)//if buffer filled up
+        {
+            SendSampleBuffer(sampleBuffer80ms);
+        }
+
+        sampleBuffer80ms[samplesInsideBuffer++] = adcData & 0xFF;//send low byte
+        sampleBuffer80ms[samplesInsideBuffer++] = ((adcData >> 8) & 0x1);//send high byte
     }
 
-    sampleBuffer80ms[samplesInsideBuffer++] = adcData & 0xFF;//send low byte
-    sampleBuffer80ms[samplesInsideBuffer++] = ((adcData >> 8) & 0x1);//send high byte
+    //if prompt mode
+    
 }
