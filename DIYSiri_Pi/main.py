@@ -1,19 +1,9 @@
-import serial
-import openwakeword
-import os
 import HelperModules.Prompting.PromptFunctions as PromptFunctions
 import HelperModules.WakeWord.WakeWordFunctions as WakeWordFunctions
 import settings
-
-state = 0#0 for wake word, 1 for prompt
-
-base_directory = os.path.dirname(os.path.abspath(__file__))
-onnx_model_path = os.path.join(base_directory, "mahcks.onnx")
-
-model = openwakeword.Model(wakeword_models = [onnx_model_path], inference_framework = "onnx")
  
 def HeaderProcess(headers):#check if headers are valid depending on mode
-    if state == 0:
+    if settings.state == 0:
         if headers[0] == 0xAA and headers[1] == 0x55:#wake word sampling start
             WakeWordFunctions.WakeWordProcessStart()
     else:
@@ -28,4 +18,3 @@ while True:
     
     if headers:
         HeaderProcess(headers)
-        

@@ -1,29 +1,27 @@
-import HelperModules.HelperForHelper.WaveFileWriting as WaveFileWriting
-import os
+import HelperModules.HelperForHelper.WaveFileWriting as WaveFileWriter
 import settings
 import HelperModules.AIPromptToText.AIPrompting as AIPromptHelper
-
-def SendPrompt():
-    print("Sending prompt")#WORK ON
-    promptDirectory = os.path.join(settings.base_directory, "prompt.wav")
-    #with open(promptDirectory, 'rb') as waveFile:
-    
+import AIPromptToAudio.PromptToAudioHelper as PromptToAudio
+        
 def ProcessPrompt(prompt):
     print("Processing prompt")
     parsed_samples = []
-    
+    #TURNS PROMPT AUDIO INTO PROCESSABLE FORMAT
     for i in range(0, len(prompt), 2):
         sample = prompt[i:i+2]
         convertedSample = (int.from_bytes(sample, byteorder = 'little', signed = False) - 256) << 7
         
         parsed_samples.append(convertedSample)
         
-    WaveFileWriting.WriteWaveFile("prompt.wav", parsed_samples)#AFTER THAT PLAY SOUND FROM PROMPT RESPONSE AND RESET STATE (WIP)
-    textResponse = AIPromptHelper.AudioPromptToText(settings.base_directory + "/prompt.wav")
+    WaveFileWriter.WriteWaveFile("prompt.wav", parsed_samples, 16000)#WRITE AS WAVE FILE
+    textResponse = AIPromptHelper.AudioPromptToText(settings.base_directory + "/prompt.wav")#SEND AUDIO PROMPT TO AI FOR TEXT
+    
     
     if textResponse:
         print("Text response generated")
-        #process text response through local tts model and play audio
+        audioResponse = PromptToAudio.GenerateWaveFileFromTextPrompt(textResponse, "response.wav")#USE AI TEXT RESPONSE FOR AUDIO TTS
+        #!!!PLAY AUDIO RESPONSE TO SPEAKERS!!!
+        settings.state = 0#set back to wake word mode
         
         
 def PromptSampleStart():
