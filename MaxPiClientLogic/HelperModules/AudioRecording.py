@@ -12,11 +12,12 @@ RATE = 16000
 
 speaking = False
 
-loudnessThreshold = -60
+loudnessStartThreshold = -24
+loudnessStopThreshold = -40
 
 maxQuietTime = 3#in seconds
 
-audio_queue = queue.Queue()
+audio_queue = queue.Queue(maxsize=3)
 
 def Callback(in_data, frame_count, time_info, status):
     audio_queue.put(in_data)
@@ -38,31 +39,47 @@ def CloseStreamBuffer():
     mic_stream.stop_stream()
     
 def ClearStreamBuffer():
-    mic_stream.read(mic_stream.get_read_available())
+    readAvailable = mic_stream.get_read_available()
+    
+    if readAvailable <= 0:
+        print("Stream empty when clearing!")
+        return
+    
+    mic_stream.read(readAvailable)
     
 def GetWMRecordingBuffer():
-    try:
-        audioBytes = audio_queue.get_nowait()
-        return numpy.frombuffer(audioBytes, dtype=numpy.int16)
-    except queue.Empty:
-        return numpy.zeros(CHUNK, dtype=numpy.int16)
+    while True:
+        try:
+            audioBytes = audio_queue.get()
+            return numpy.frombuffer(audioBytes, dtype=numpy.int16)
+        except queue.Empty:
+            continue
 
 def GetBufferLoudness(buffer):
+    if numpy.all(buffer == 0):
+        return 0, -200.0
+    
     rms = numpy.sqrt(numpy.mean(numpy.square(numpy.astype(buffer, numpy.float64))))
-    db = 20 * numpy.log10(rms/ 32767.0)
+    db = 20 * numpy.log10(numpy.maximum(rms/ 32767.0, 1e-10))
+    print(f"Loudness in dB: {db}")
     
     return rms, db
 
-def LoudnessOverThreshold(buffer):
+def LoudnessOverThreshold(buffer, mode):
     rms, db = GetBufferLoudness(buffer)
     
-    if db >= loudnessThreshold:
-        return True
+    if mode == 'start':
+        if db >= loudnessStartThreshold:
+            return True
+    elif mode == 'stop':
+        if db >= loudnessStopThreshold:
+            return True
     
     return False
 
 #PROMPTING
 def RecordPrompt():#returns an array of the prompt audio
+    ClearStreamBuffer()
     print("Recording prompt")
     
     speaking = True
@@ -73,10 +90,12 @@ def RecordPrompt():#returns an array of the prompt audio
     startTime = 0
     
     while speaking:
+        print(f"Quiet: {quiet}")
         recordingBuffer = GetWMRecordingBuffer()
+        promptArray.append(recordingBuffer)
         
         if quiet:
-            if LoudnessOverThreshold(recordingBuffer):#if loud enough
+            if LoudnessOverThreshold(recordingBuffer, 'start'):#if loud enough
                 quiet = False#continue recording
             else:
                 currentTime = time.perf_counter()
@@ -85,10 +104,8 @@ def RecordPrompt():#returns an array of the prompt audio
                 if deltaTime > maxQuietTime:
                     speaking = False
                 continue
-                
-        promptArray.append(recordingBuffer)
         
-        if not LoudnessOverThreshold(recordingBuffer):
+        if not LoudnessOverThreshold(recordingBuffer, 'stop'):
             quiet = True
             startTime = time.perf_counter()
         

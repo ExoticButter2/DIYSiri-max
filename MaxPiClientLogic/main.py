@@ -8,31 +8,47 @@ PC_IP = "192.168.178.162"
 PORT = 4000
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect(PC_IP, PORT)
+client_socket.connect((PC_IP, PORT))
 client_socket.setblocking(False)
 
 settings.state = 0#0 for wake word, 1 for prompt
 lastState = 0
 
+receiveBuffer = b""#create empty buffer for TRIGGERED message
+
 while True:
+    print(settings.state)
     if settings.state == 0:#if wake word mode
         if lastState == 1:
             AudioRecording.ClearStreamBuffer()
         
         audioBuffer = AudioRecording.GetWMRecordingBuffer()
-        client_socket.sendall(audioBuffer)
+        rms, db = AudioRecording.GetBufferLoudness(audioBuffer)
+        
+        print(f"Loudness: {db}")
+        
+        try:
+            if rms != 0:
+                client_socket.send(audioBuffer)
+        except BlockingIOError:
+            pass
         
         try:
             response = client_socket.recv(1024)
-            if response == b"TRIGGERED":
-                AudioRecording.ClearStreamBuffer()
-                settings.state = 1
+            
+            if response:
+                receiveBuffer += response
+                
+            if b"\n" in receiveBuffer:
+                message, receiveBuffer = receiveBuffer.split(b"\n", 1)
+                
+                if message == b"TRIGGERED":
+                    AudioRecording.ClearStreamBuffer()
+                    settings.state = 1
+                    receiveBuffer = b""
+                    print("Wake word found")
         except BlockingIOError:
-            continue
-        
-        # if WakeWordAnalyzing.AnalyzeAudioBuffer():#if wake word detected
-        AudioRecording.ClearStreamBuffer()
-        settings.state = 1#go to prompt mode
+            pass
         
         lastState = 0
     elif settings.state == 1:#if prompt mode
@@ -43,7 +59,6 @@ while True:
         elif settings.playingAudio:
             continue
         
-        lastState = 1
         promptArray = AudioRecording.RecordPrompt()
         
         if not promptArray:
@@ -60,4 +75,5 @@ while True:
             continue
         
         
-        # AudioPlaying.PlayAudio(audioResponsePath)
+        AudioPlaying.PlayAudio(audioResponsePath)
+        lastState = 1

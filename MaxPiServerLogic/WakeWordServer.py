@@ -20,10 +20,14 @@ modelPath = os.path.join(mainFolderPath, "mahcks.onnx")
 
 model = openwakeword.Model(wakeword_models=[modelPath], inference_framework="onnx")
 
+audioBufferArray = bytearray()
+FRAME_SIZE = 2560
+
 def AnalyzeAudioBuffer(buffer):
     result = model.predict(buffer)
     
     for mdl in result.keys():
+        print(f"Result score: {result[mdl]}")
         if result[mdl] >= threshold:
             model.reset()
             print("Wake word found!")
@@ -32,11 +36,21 @@ def AnalyzeAudioBuffer(buffer):
     return False
 
 while True:
-    print("Received data")
-    data = connection.recv(1024)
+    try:
+        data = connection.recv(4096)
+        print("Received data")
+        if not data:
+            break
+        
+        audioBufferArray.extend(data)
+    except BlockingIOError:
+        pass
     
-    numpyData = numpy.frombuffer(data, dtype=numpy.int16)
-    
-    if AnalyzeAudioBuffer(numpyData):
-        connection.send(b"TRIGGERED")
-        print("Wake word detected")
+    while len(audioBufferArray) >= FRAME_SIZE:
+            frame_data = audioBufferArray[:FRAME_SIZE]#save frame
+            del audioBufferArray[:FRAME_SIZE]#clear frame
+            numpyData = numpy.frombuffer(frame_data, dtype=numpy.int16)
+            
+            if AnalyzeAudioBuffer(numpyData):
+                connection.send(b"TRIGGERED\n")
+                print("Wake word detected")
