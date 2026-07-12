@@ -3,6 +3,7 @@ from HelperModules import AudioPlaying
 from HelperModules import PromptHelper
 from Settings import settings
 import socket
+import os
 
 PC_IP = "192.168.178.162"
 PORT = 4000
@@ -47,6 +48,9 @@ while True:
                     settings.state = 1
                     receiveBuffer = b""
                     print("Wake word found")
+                    
+                    AudioPlaying.PlayAudio(os.path.join(os.getcwd(), "maxwhat.wav"))
+                    settings.playedAudioBefore = False
         except BlockingIOError:
             pass
         
@@ -61,7 +65,7 @@ while True:
         
         promptArray = AudioRecording.RecordPrompt()
         
-        if not promptArray:
+        if promptArray.size == 0:
             continue
         
         textResponse = PromptHelper.ProcessPrompt(promptArray)

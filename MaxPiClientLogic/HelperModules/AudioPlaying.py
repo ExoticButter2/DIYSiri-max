@@ -1,6 +1,6 @@
 from Settings import settings
-from HelperModules import PyAudioHelper
 import wave
+import pyaudio
 
 def PlayAudio(audioPath):#has to be .wav
     print("Playing audio")
@@ -9,11 +9,10 @@ def PlayAudio(audioPath):#has to be .wav
     
     waveFile = wave.open(audioPath, "rb")
     
-    speakerStream = settings.pyAudioInstance.open(format=settings.pyAudioInstance.get_format_from_width(waveFile.getsampwidth()), 
+    speakerStream = settings.pyAudioInstance.open(format=pyaudio.paInt16, 
                                                   output=True, 
-                                                  output_device_index=PyAudioHelper.FindWMDeviceIndex('output'),
-                                                  channels=waveFile.getnchannels(),
-                                                  rate = waveFile.getframerate())
+                                                  channels=2,
+                                                  rate = 48000)
     
     data = waveFile.readframes(waveFile.getnframes())
     

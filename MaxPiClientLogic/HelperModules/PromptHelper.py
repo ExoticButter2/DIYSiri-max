@@ -2,10 +2,11 @@ from google import genai
 from HelperModules import WaveFileWriter
 import edge_tts
 import subprocess
+import time
+import os
 
 client = genai.Client()
-
-scriptFolderDir = os.path.dirname(os.path.abspath(__file__))
+scriptFolderDir = os.getcwd()
 
 def ProcessPrompt(dataArray):#returns text response from audio
     print("Processing prompt")
@@ -13,9 +14,16 @@ def ProcessPrompt(dataArray):#returns text response from audio
     
     audioFile = client.files.upload(file=promptPath)
     
+    while audioFile.state.name == "PROCESSING":
+        print("Processing...")
+        time.sleep(2)
+        audioFile = genai.get_file(audioFile.name)
+    
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite", contents=["Write a 50 word response to this audio clip:", audioFile]
+        model="gemini-3.1-flash-lite", contents=["Do not transcribe the audio file. Instead analyze the spoken sentence and provide an answer to the sentence:", audioFile]
     )
+    
+    client.files.delete(name=audioFile.name)
     
     print("Processed prompt")
     return response.text
@@ -23,16 +31,14 @@ def ProcessPrompt(dataArray):#returns text response from audio
 def ConvertPromptTextToAudio(textResponse):
     wav_filePath = os.path.join(scriptFolderDir, "promptResponse.wav")
     mp_filePath = os.path.join(scriptFolderDir, "promptResponse.mp3")
-    
+
     if os.path.exists(mp_filePath):
         os.remove(mp_filePath)
-    
-    communicate = edge_tts.Communicate(text=textResponse, voice="en-US-BrianNeural")
+
+    communicate = edge_tts.Communicate(text=textResponse, voice="ar-LY-OmarNeural")
     communicate.save_sync(mp_filePath)
-    
-    subprocess.run(['ffmpeg', '-y', '-i', mp_filePath, wav_filePath])
-        
-    #subprocess.call(['ffmpeg', '-i', mpFilePath, os.path.join(scriptFolderDir, "promptResponse.wav")])
+
+    subprocess.run(['ffmpeg', '-y', '-i', mp_filePath, '-ar', '48000', '-ac', '2', '-f', 'wav', wav_filePath], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
     os.remove(mp_filePath)
-    
-    return os.path.join(scriptFolderDir, "promptResponse.wav")
+
+    return wav_filePath
