@@ -12,7 +12,7 @@ RATE = 16000
 
 speaking = False
 
-loudnessStartThreshold = -24
+loudnessStartThreshold = -29.5
 loudnessStopThreshold = -40
 
 maxQuietTime = 3#in seconds
