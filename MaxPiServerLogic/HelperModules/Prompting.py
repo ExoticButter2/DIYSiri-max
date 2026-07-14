@@ -3,7 +3,6 @@ from google import genai
 from faster_whisper import WhisperModel
 from kokoro import KPipeline
 import soundfile as sf
-import torch
 import numpy
 
 pipeline = KPipeline(lang_code='a', device='cpu')

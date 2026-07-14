@@ -9,10 +9,6 @@ def PlayAudio(audioPath):#has to be .wav
     
     waveFile = wave.open(audioPath, "rb")
     
-    print(f"Channels: {waveFile.getnchannels()}")
-    print(f"Sample rate: {waveFile.getframerate()}")
-    print(f"Format: {settings.pyAudioInstance.get_format_from_width(waveFile.getsampwidth())}")
-    
     speakerStream = settings.pyAudioInstance.open(format=pyaudio.get_format_from_width(waveFile.getsampwidth()), 
                                                   output=True, 
                                                   channels=waveFile.getnchannels(),

@@ -33,10 +33,10 @@ lastState = 0
 while True:
     print(settings.state)
     if settings.state == 0:#if wake word mode
-        if lastState == 1:
+        if lastState == 1:#if previously prompted
             AudioRecording.ClearStreamBuffer()
         
-        
+        lastState = 0
         audioBuffer = AudioRecording.GetWMRecordingBuffer()
         rms, db = AudioRecording.GetBufferLoudness(audioBuffer)
         
@@ -75,8 +75,6 @@ while True:
             settings.playedAudioBefore = False
         elif decodedResponse == "UNTRIGGERED":
             print("No wake word found")
-        
-        lastState = 0
     elif settings.state == 1:#if prompt mode
         if not settings.playingAudio and settings.playedAudioBefore:#check if audio just finished playing
             settings.playedAudioBefore = False

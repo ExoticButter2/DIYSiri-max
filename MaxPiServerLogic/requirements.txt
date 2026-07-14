@@ -1,0 +1,7 @@
+ollama
+google-generativeai
+faster_whisper
+kokoro
+soundfile
+torch
+numpy

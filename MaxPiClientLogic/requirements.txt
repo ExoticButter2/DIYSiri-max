@@ -2,3 +2,4 @@ pyaudio
 google-genai
 numpy
 edge_tts
+soundfile

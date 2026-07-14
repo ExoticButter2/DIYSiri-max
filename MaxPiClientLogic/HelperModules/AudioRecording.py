@@ -5,17 +5,17 @@ import time
 from Settings import settings
 import queue
 
-FORMAT = pyaudio.paInt16
+FORMAT = pyaudio.paInt16#microphone sampling settings
 CHANNELS = 1
 CHUNK = 1280
 RATE = 16000
 
 speaking = False
 
-loudnessStartThreshold = -29.5
+loudnessStartThreshold = -28
 loudnessStopThreshold = -40
 
-maxQuietTime = 3#in seconds
+maxQuietTime = 2.5#in seconds
 
 audio_queue = queue.Queue(maxsize=3)
 
@@ -35,7 +35,7 @@ def OpenStreamBuffer():
     mic_stream.start_stream()
     
 def CloseStreamBuffer():
-    ClearStreamBuffer()
+    ClearStreamBuffer()#just in case stop stream doesnt actually clear the buffer
     mic_stream.stop_stream()
     
 def ClearStreamBuffer():
@@ -47,7 +47,7 @@ def ClearStreamBuffer():
     
     mic_stream.read(readAvailable)
     
-def GetWMRecordingBuffer():
+def GetWMRecordingBuffer():#returns a 1280 byte chunk of int16 audio when available
     while True:
         try:
             audioBytes = audio_queue.get()
@@ -56,10 +56,10 @@ def GetWMRecordingBuffer():
             continue
 
 def GetBufferLoudness(buffer):
-    if numpy.all(buffer == 0):
+    if numpy.all(buffer == 0):#if no data in audio buffer (zeros), the function should work without it but who knows, maybe i'll remove it later idk
         return 0, -200.0
     
-    rms = numpy.sqrt(numpy.mean(numpy.square(numpy.astype(buffer, numpy.float64))))
+    rms = numpy.sqrt(numpy.mean(numpy.square(numpy.astype(buffer, numpy.float64))))#average loudness
     db = 20 * numpy.log10(numpy.maximum(rms/ 32767.0, 1e-10))
     print(f"Loudness in dB: {db}")
     
@@ -96,7 +96,7 @@ def RecordPrompt():#returns an array of the prompt audio
         
         if quiet:
             if LoudnessOverThreshold(recordingBuffer, 'start'):#if loud enough
-                quiet = False#continue recording
+                quiet = False#stop timer
             else:
                 currentTime = time.perf_counter()
                 deltaTime = currentTime - startTime
@@ -107,7 +107,7 @@ def RecordPrompt():#returns an array of the prompt audio
         
         if not LoudnessOverThreshold(recordingBuffer, 'stop'):
             quiet = True
-            startTime = time.perf_counter()
+            startTime = time.perf_counter()#reset timer
         
         
     concatPromptArray = numpy.concatenate(promptArray)
