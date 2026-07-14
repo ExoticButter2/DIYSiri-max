@@ -24,12 +24,13 @@ def ProcessAudioPrompt(audioPromptArray):
     
 def ProcessTextPrompt(textPrompt):
     response = chat(
-        model='qwen3.5:2b',
+        model='qwen3.5:9b',
         messages=[{'role': 'user', 'content': textPrompt}],
         keep_alive=-1,
         options={
-            "num_predict": 75
-        }
+            "temperature": 0.2
+        },
+        think=False
     )
     
     if not response.message.content:
