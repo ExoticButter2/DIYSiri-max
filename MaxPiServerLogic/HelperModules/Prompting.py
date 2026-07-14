@@ -49,7 +49,6 @@ def ConvertTextResponseToAudio(textResponse):
         ttsAudioArray.append(audio)
         
     concatArray = numpy.concatenate(ttsAudioArray)
-    convertedArray = concatArray
     
     print("Generated tts response")
     return concatArray
