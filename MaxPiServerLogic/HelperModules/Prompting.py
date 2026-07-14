@@ -29,7 +29,7 @@ def ProcessAudioPrompt(audioPromptArray):
     
 def ProcessTextPrompt(textPrompt):
     try:
-        if mode == 'cloud':
+        if mode == 'local':
             response = chat(
                 model='qwen3.5:9b',
                 messages=[{'role': 'user', 'content': textPrompt}],
@@ -47,7 +47,7 @@ def ProcessTextPrompt(textPrompt):
             print(response.message.content)
             
             return response.message.content
-        elif mode == 'local':
+        elif mode == 'cloud':
             global previousPromptId
             if previousPromptId:
                 interaction = client.interactions.create(
