@@ -1,4 +1,4 @@
-from ollama import chat
+from google import genai
 from faster_whisper import WhisperModel
 from kokoro import KPipeline
 import soundfile as sf
@@ -9,6 +9,7 @@ pipeline = KPipeline(lang_code='a', device='cpu')
 
 model_size = "large-v3"
 
+client = genai.Client()
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 def ProcessAudioPrompt(audioPromptArray):
@@ -23,22 +24,21 @@ def ProcessAudioPrompt(audioPromptArray):
     return transcription
     
 def ProcessTextPrompt(textPrompt):
-    response = chat(
-        model='qwen3.5:2b',
-        messages=[{'role': 'user', 'content': textPrompt}],
-        keep_alive=-1,
-        options={
-            "num_predict": 75
-        }
-    )
+    try:
+        response = client.models.generate_content(
+            model = "gemini-3.1-flash-lite",
+            contents = [textPrompt + " Answer in maximum 60 words."]
+        )
+    except Exception as e:
+        print(f"Failed text generation: {e}")
     
-    if not response.message.content:
-        print("Ollama text generation failed")
+    if not response.text:
+        print("Gemini text generation failed")
         return "I'm sorry, I couldn't generate a response."
     
-    print("Generated ollama text prompt")
+    print("Generated gemini text prompt")
     
-    return response.message.content
+    return response.text
     
 def ConvertTextResponseToAudio(textResponse):
     ttsAudioArray = []
