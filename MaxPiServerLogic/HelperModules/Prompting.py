@@ -13,6 +13,8 @@ model_size = "large-v3"
 
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
+previousPromptId = None
+
 def ProcessAudioPrompt(audioPromptArray):
     reshapedPromptArray = audioPromptArray.reshape(-1, 1)
     sf.write("prompt.wav", reshapedPromptArray, 16000)
@@ -26,19 +28,35 @@ def ProcessAudioPrompt(audioPromptArray):
     
 def ProcessTextPrompt(textPrompt):
     try:
-        response = client.models.generate_content(
-            model = "gemini-3.1-flash-lite",
-            contents = [textPrompt + " Answer in maximum 60 words."]
-        )
-        
-        if response.text:
-            print(response.text)
-            return response.text
+        if previousPromptId != None:
+            interaction = client.interactions.create(
+                model = "gemini-3.1-flash-lite",
+                input = f"{textPrompt} Use maximum 50 words.",
+                generation_config = {
+                    "thinking_level": "low"
+                },
+                store = True,
+                previous_interaction_id=previousPromptId
+            )
+            
+            print(interaction.output_text)
+            previousPromptId = interaction.id
+            return interaction.output_text
+        else:
+            interaction = client.interactions.create(
+                model = "gemini-3.1-flash-lite",
+                input = f"{textPrompt} Use maximum 50 words.",
+                generation_config = {
+                    "thinking_level": "low"
+                },
+                store = True,
+            )
+            
+            print(interaction.output_text)
+            previousPromptId = interaction.id
+            return interaction.output_text
     except Exception as e:
         print(f"Failed text generation: {e}")
-    
-    if not response.text:
-        print("Gemini text generation failed")
     
     print("Text generation failed")
     
@@ -52,7 +70,6 @@ def ConvertTextResponseToAudio(textResponse):
         ttsAudioArray.append(audio)
         
     concatArray = numpy.concatenate(ttsAudioArray)
-    convertedArray = concatArray
     
     print("Generated tts response")
     return concatArray
