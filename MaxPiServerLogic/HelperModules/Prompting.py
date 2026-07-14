@@ -28,19 +28,21 @@ def ProcessAudioPrompt(audioPromptArray):
     
 def ProcessTextPrompt(textPrompt):
     try:
-        if previousPromptId != None:
+        global previousPromptId
+        if previousPromptId:
             interaction = client.interactions.create(
                 model = "gemini-3.1-flash-lite",
                 input = f"{textPrompt} Use maximum 50 words.",
                 generation_config = {
-                    "thinking_level": "low"
+                    "thinking_level": "low",
                 },
                 store = True,
                 previous_interaction_id=previousPromptId
             )
             
-            print(interaction.output_text)
             previousPromptId = interaction.id
+            
+            print(interaction.output_text)
             return interaction.output_text
         else:
             interaction = client.interactions.create(
@@ -49,11 +51,12 @@ def ProcessTextPrompt(textPrompt):
                 generation_config = {
                     "thinking_level": "low"
                 },
-                store = True,
+                store = True
             )
             
-            print(interaction.output_text)
             previousPromptId = interaction.id
+            
+            print(interaction.output_text)
             return interaction.output_text
     except Exception as e:
         print(f"Failed text generation: {e}")
