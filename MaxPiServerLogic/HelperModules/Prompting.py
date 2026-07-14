@@ -1,15 +1,16 @@
-from google import genai
 from faster_whisper import WhisperModel
 from kokoro import KPipeline
 import soundfile as sf
 import torch
 import numpy
+from google import genai
+
+client = genai.Client()
 
 pipeline = KPipeline(lang_code='a', device='cpu')
 
 model_size = "large-v3"
 
-client = genai.Client()
 model = WhisperModel(model_size, device="cpu", compute_type="int8")
 
 def ProcessAudioPrompt(audioPromptArray):
@@ -29,16 +30,19 @@ def ProcessTextPrompt(textPrompt):
             model = "gemini-3.1-flash-lite",
             contents = [textPrompt + " Answer in maximum 60 words."]
         )
+        
+        if response.text:
+            print(response.text)
+            return response.text
     except Exception as e:
         print(f"Failed text generation: {e}")
     
     if not response.text:
         print("Gemini text generation failed")
-        return "I'm sorry, I couldn't generate a response."
     
-    print("Generated gemini text prompt")
+    print("Text generation failed")
     
-    return response.text
+    return "Failed to generate text response."
     
 def ConvertTextResponseToAudio(textResponse):
     ttsAudioArray = []
