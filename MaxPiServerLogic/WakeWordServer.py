@@ -11,6 +11,7 @@ ADDRESS = ("0.0.0.0", 4000)
 
 server_socket.bind(ADDRESS)
 server_socket.listen(1)
+server_socket.settimeout(30)
 
 print("Waiting for pi..")
 connection, address = server_socket.accept()
@@ -89,7 +90,6 @@ while True:
             print("No text response generated!")
             continue
         
-        print(textResponse)
         print("Converting text response to audio..")
         audioResponseArray = Prompting.ConvertTextResponseToAudio(textResponse)
         
