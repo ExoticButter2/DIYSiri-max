@@ -1,6 +1,5 @@
 from HelperModules import AudioRecording
 from HelperModules import AudioPlaying
-from HelperModules import PromptHelper
 from HelperModules import Networking
 from Settings import settings
 import socket
