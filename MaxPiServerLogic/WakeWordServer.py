@@ -20,7 +20,7 @@ print(f"Connected to {address}")
 threshold = 0.5
 
 mainFolderPath = os.path.dirname(os.path.abspath(__file__))
-modelPath = os.path.join(mainFolderPath, "mahcks.onnx")
+modelPath = os.path.join(mainFolderPath, "mocks.onnx")
 
 model = openwakeword.Model(wakeword_model_paths=[modelPath])
 
