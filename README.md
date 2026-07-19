@@ -26,5 +26,5 @@ After prompting it, in a couple seconds it should:
 1. Convert the audio to text using faster-whisper
 2. Generate a text response using Gemini API (or Ollama changeable in Prompting Helper module) and
 3. Turn it to audio using KokoroTTS and finally to the speakers.
-4. 
+
 Then it goes back to wake word detection and you can repeat the process.
